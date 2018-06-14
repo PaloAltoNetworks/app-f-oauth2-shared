@@ -132,9 +132,7 @@
                 resp.on('end', () => {
                     console.log("Response received from PingID:\n" + data);
                     let pingIdResponse = JSON.parse(data);
-                    // TODO remove bypass
-                    // dataObj.tokens = { access_token: pingIdResponse.access_token, refresh_token: pingIdResponse.refresh_token };
-                    dataObj.tokens = { access_token: "atoken_succ_create", refresh_token: "rtoken_succ_create" };
+                    dataObj.tokens = { access_token: pingIdResponse.access_token, refresh_token: pingIdResponse.refresh_token };
                     dataObj.secretName = dataObj.stageVariables.applicationName + "_" + dataObj.instance_secret;
                     dataObj.secretDesc = "Tokens for instance " + dataObj.instance_id;
                     resolve(dataObj);
@@ -172,9 +170,7 @@
                 resp.on('end', () => {
                     console.log("Response received from PingID:\n" + data);
                     let pingIdResponse = JSON.parse(data);
-                    // TODO remove bypass
-                    // dataObj.tokens = { access_token: pingIdResponse.access_token, refresh_token: pingIdResponse.refresh_token };
-                    dataObj.tokens = { access_token: "atoken_succ_refresh", refresh_token: "rtoken_succ_refresh" };
+                    dataObj.tokens = { access_token: pingIdResponse.access_token, refresh_token: pingIdResponse.refresh_token };
                     resolve(dataObj);
                 });
             }).on("error", err => {
