@@ -54,11 +54,13 @@ function activation() {
                     break;
                 case true:
                     returnObject = {
-                        body: JSON.stringify(
-                            {
-                                result: "OK",
-                                api_key: dataObj.apiKey
+                        statusCode: 302,
+                        headers: {
+                            location: dataObj.stageVariables.applicationWelcomePage + "?" + querystring.stringify({
+                                apikey: dataObj.apiKey
                             })
+                        },
+                        body: JSON.stringify({ result: "OK" })
                     };
                     break;
             }
@@ -82,11 +84,15 @@ function authorization() {
     ).update(dataObj.apiKey).digest('hex');
     dataObj.secretName = dataObj.stageVariables.applicationName + "_" + dataObj.instance_secret;
     return p.getMasterSecret(dataObj).then(p.pingIdAuth).then(p.createTokens).then(
-        () => {
-            let bodyResp = { api_key: dataObj.apiKey };
-            bodyResp.result = "OK";
-            return { body: JSON.stringify(bodyResp) };
-        }
+        () => ({
+            statusCode: 302,
+            headers: {
+                location: dataObj.stageVariables.applicationWelcomePage + "?" + querystring.stringify({
+                    apikey: dataObj.apiKey
+                })
+            },
+            body: JSON.stringify({ result: "OK" })
+        })
     );
 }
 
