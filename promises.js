@@ -3,6 +3,7 @@
 (function () {
     const c = require('consts');
     const https = require('https');
+    const querystring = require('querystring');
     const url = require('url');
 
     var AWS = require('aws-sdk'),
@@ -20,6 +21,22 @@
     });
 
     // AWS Secrets Manager promises
+    module.exports.checkExisting = dataObj => {
+        return new Promise((resolve, reject) => {
+            // TODO 
+            //
+            console.log("Check instance existance " + dataObj.secretName);
+            dataObj.exists = false;
+            client.describeSecret({ SecretId: dataObj.secretName }, (err, data) => {
+                if (!err) {
+                    dataObj.exists = true;
+                }
+                resolve(dataObj);
+            });
+        }
+        );
+    };
+
     module.exports.getMasterSecret = dataObj => {
         return new Promise((resolve, reject) => {
             console.log("Calling Secret Manager to fetch " + dataObj.masterSecret);
@@ -108,20 +125,20 @@
     module.exports.pingIdAuth = dataObj => {
         console.log("Calling PingID Authorization");
         return new Promise((resolve, reject) => {
-            let postBody = JSON.stringify({
+            let postBody = querystring.stringify({
+                client_id: dataObj.masterSecretValue.client_id,
+                client_secret: dataObj.masterSecretValue.client_secret,
                 code: dataObj.pingIdCode,
                 redirect_uri: dataObj.stageVariables.applicationCallbackUrl,
-                grant_type: "authorization_code",
-                client_id: dataObj.masterSecretValue.client_id,
-                client_secret: dataObj.masterSecretValue.client_secret
-            });
+                grant_type: "authorization_code"
+        });
             console.log("Body to send to PingID auth:\n" + postBody);
             let cRequest = https.request({
                 hostname: oauth2TokenURL.hostname,
                 path: oauth2TokenURL.pathname,
                 method: c.METHOD_POST,
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/x-www-form-urlencoded",
                     "Content-Length": postBody.length
                 }
             }, resp => {
@@ -133,7 +150,6 @@
                     console.log("Response received from PingID:\n" + data);
                     let pingIdResponse = JSON.parse(data);
                     dataObj.tokens = { access_token: pingIdResponse.access_token, refresh_token: pingIdResponse.refresh_token };
-                    dataObj.secretName = dataObj.stageVariables.applicationName + "_" + dataObj.instance_secret;
                     dataObj.secretDesc = "Tokens for instance " + dataObj.instance_id;
                     resolve(dataObj);
                 });
@@ -147,11 +163,11 @@
     module.exports.pingIdRefresh = dataObj => {
         console.log("Calling PingID Refresh");
         return new Promise((resolve, reject) => {
-            let postBody = JSON.stringify({
+            let postBody = querystring.stringify({
                 refresh_token: dataObj.tokens.refresh_token,
-                grant_type: "refresh_token",
                 client_id: dataObj.masterSecretValue.client_id,
-                client_secret: dataObj.masterSecretValue.client_secret
+                client_secret: dataObj.masterSecretValue.client_secret,
+                grant_type: "refresh_token"
             });
             console.log("Body to send to PingID refresh:\n" + postBody);
             let cRequest = https.request({
@@ -159,7 +175,7 @@
                 path: oauth2TokenURL.pathname,
                 method: c.METHOD_POST,
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/x-www-form-urlencoded",
                     "Content-Length": postBody.length
                 }
             }, resp => {
@@ -170,7 +186,7 @@
                 resp.on('end', () => {
                     console.log("Response received from PingID:\n" + data);
                     let pingIdResponse = JSON.parse(data);
-                    dataObj.tokens = { access_token: pingIdResponse.access_token, refresh_token: pingIdResponse.refresh_token };
+                    dataObj.tokens = { access_token: pingIdResponse.access_token, refresh_token: dataObj.tokens.refresh_token };
                     resolve(dataObj);
                 });
             }).on("error", err => {
