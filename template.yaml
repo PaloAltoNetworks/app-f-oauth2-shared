@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: 'AWS::Serverless-2016-10-31'
+Resources:
+  Oauth2SharedGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: Oauth2SharedGateway
+      StageName: prod
+      DefinitionBody:
+        swagger: "2.0"
+        info:
+          version: "2018-06-11T16:14:04Z"
+          title: "AF_SharedComp"
+        paths:
+          /:
+            get:
+              produces:
+              - "application/json"
+              responses:
+                200:
+                  description: "200 response"
+                  schema:
+                    $ref: "#/definitions/Empty"
+          /{proxy+}:
+            x-amazon-apigateway-any-method:
+              produces:
+              - "application/json"
+              parameters:
+              - name: "proxy"
+                in: "path"
+                required: true
+                type: "string"
+              responses: {}
+      Variables:
+        applicationWelcomePage: "0000"
+        applicationCallbackUrl: "0000"
+        applicationName: "0000"
+        applicationSharedSecret: "0000"
+        applicationScope: "0000"
+  Oauth2SharedLamdba:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: oauth2sharedlamdba
+      Handler: index.handler
+      Runtime: nodejs8.10
+      Timeout: 180
+      CodeUri:
+        Bucket: oauth2shared
+        Key: oauth2shared.zip
+      Events:
+        Activation:
+          Type: Api
+          Properties:
+            Path: /
+            Method: get
+        Wildcard:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: any
+      Policies:
+        - Statement:
+          - Effect: Allow
+            Action:
+              - "logs:CreateLogStream"
+              - "logs:CreateLogGroup"
+              - "logs:PutLogEvents"
+              - "secretsmanager:GetSecretValue"
+              - "secretsmanager:DescribeSecret"
+              - "secretsmanager:PutSecretValue"
+              - "secretsmanager:CreateSecret"
+              - "secretsmanager:DeleteSecret"
+            Resource:
+              - "*"
