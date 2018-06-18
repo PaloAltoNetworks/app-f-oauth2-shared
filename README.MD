@@ -9,7 +9,7 @@ The deployment will trigger a CloudFormation stack that will create the followin
 * Lamba Function named **Oauth2SharedLamdba**
 * IAM Role named **aws-serverless-repository-o-Oauth2SharedLamdbaRole...**
 Both the _API Gateway_ and the _IAM Role_ will need some adjustment before the application can be used.
-## AWS Secrets Manager inline policies
+## IAM Role inline policies for AWS Secrets Manageer
 This serverless application will store application credentials (*access_token*, *refresh_token*) in the **AWS Secrets Manager** service. The deployment will create an IAM Role named _aws-serverless-repository-o-Oauth2SharedLamdbaRole..._ with the RO AWS Managed Policy named *AWSLambdaBasicExecutionRole* attached to it. You must add an inlice policy to the role to allow the lamdba function be able to interface with the _Secrets Manager_
 1. Navigate in the AWS Console to Services -> IAM -> Roles
 2. Click on the role named _aws-serverless-repository-o-Oauth2SharedLamdbaRole..._
