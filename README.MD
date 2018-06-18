@@ -45,3 +45,8 @@ Use the *AWS Secrets Manager* console to create the master secret.
 ..* `client_secret` with a value equal to the *client_secret* value provided back by DevOps.
 5. The _Secret name_ must conform to *<applicationName>_master* schema.
 6. Keep disabled _automatic rotation_ and store the secret.
+## Token operations
+The serverless application implements the `/token` entry point to deal with token operations. A unique query string parameter named `api_secret` must be provided. Its value can be calculated as `sha265hmac(API_KEY, shared_secret)`. You can use [online hmac calculator](https://www.freeformatter.com/hmac-generator.html) for manual testing of the API.
+* GET: Will provide back with a JSON document including the last known *access_token* and its *expiration* time (UTC timestamp).
+* PUT: Will trigger a token refresh operation and return the new *access_token* value and expiration timestamp.
+* DELETE: To delete the corresponding secret in the AWS Secrets Manager service. The AWS administrator can revert this operation from the AWS Secrets Manager console for 30 days.
