@@ -10,12 +10,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const querystring = require("querystring");
-const crypto = require("crypto");
-const url = require("url");
-const https = require("https");
+
+declare function require(name: string);
+import * as querystring from "querystring";
+import * as crypto from "crypto";
+import * as url from "url";
+import * as https from "https";
+
 const OAUTH2_AUTH = "https://identity.paloaltonetworks.com/as/authorization.oauth2";
 const OAUTH2_TOKEN = "https://identity.paloaltonetworks.com/as/token.oauth2";
 const RESOURCE_ACTIVATION = "/";
@@ -24,22 +25,65 @@ const METHOD_GET = "GET";
 const METHOD_DELETE = "DELETE";
 const METHOD_PUT = "PUT";
 const METHOD_POST = "POST";
-var qs;
+
+var qs: { [key: string]: string; };
+
 // -- Embeding AWS JS Stuff
-var AWS = require('aws-sdk'), region = process.env.AWS_REGION, endpoint = "https://secretsmanager." + region + ".amazonaws.com";
+var AWS = require('aws-sdk'),
+    region = process.env.AWS_REGION,
+    endpoint = "https://secretsmanager." + region + ".amazonaws.com";
+
 console.log("region = " + region);
 console.log("endpoint = " + endpoint);
+
 var oauth2TokenURL = url.parse(OAUTH2_TOKEN);
+
 var client = new AWS.SecretsManager({
     endpoint: endpoint,
     region: region
 });
 // --
+
 class promiseObjPass {
+    exists: boolean;
+    httpMethod: string;
+    instance_id;
+    secretName: string;
+    secretDesc: string;
+    pingIdCode: string;
+    apiKey: string;
+    instance_secret: string;
+    masterSecret: string;
+    masterSecretValue: {
+        client_id: string;
+        client_secret: string;
+    };
+    tokens: {
+        access_token: string;
+        refresh_token: string;
+        expires_utc: number;
+    };
+    stageVariables: {
+        applicationCallbackUrl: string;
+        applicationSharedSecret: string;
+        applicationName: string;
+        applicationScope: string;
+        applicationWelcomePage: string;
+    }
 }
+
+interface apiGwResponse {
+    statusCode?: number;
+    headers?: {
+        location: string;
+    };
+    body: string;
+}
+
 var dataObj = new promiseObjPass();
+
 // AWS Secrets Manager promises
-function checkExisting(dataObj) {
+function checkExisting(dataObj: promiseObjPass): Promise<promiseObjPass> {
     return new Promise((resolve, reject) => {
         console.log("Check instance existance " + dataObj.secretName);
         dataObj.exists = false;
@@ -49,50 +93,49 @@ function checkExisting(dataObj) {
             }
             resolve(dataObj);
         });
-    });
-}
-;
-function getMasterSecret(dataObj) {
+    }
+    );
+};
+
+function getMasterSecret(dataObj: promiseObjPass): Promise<promiseObjPass> {
     return new Promise((resolve, reject) => {
         console.log("Calling Secret Manager to fetch " + dataObj.masterSecret);
         client.getSecretValue({ SecretId: dataObj.masterSecret }, (err, data) => {
             if (err) {
                 reject(err.message);
-            }
-            else {
+            } else {
                 if (data.SecretString !== "") {
                     dataObj.masterSecretValue = JSON.parse(data.SecretString);
                     resolve(dataObj);
-                }
-                else {
+                } else {
                     reject("Non-string secret value in " + dataObj.masterSecret);
                 }
             }
         });
-    });
-}
-;
-function getTokens(dataObj) {
+    }
+    );
+};
+
+function getTokens(dataObj: promiseObjPass): Promise<promiseObjPass> {
     return new Promise((resolve, reject) => {
         console.log("Calling Secret Manager to fetch " + dataObj.secretName);
         client.getSecretValue({ SecretId: dataObj.secretName }, (err, data) => {
             if (err) {
                 reject(err.message);
-            }
-            else {
+            } else {
                 if (data.SecretString !== "") {
                     dataObj.tokens = JSON.parse(data.SecretString);
                     resolve(dataObj);
-                }
-                else {
+                } else {
                     reject("Non-string secret value in " + dataObj.secretName);
                 }
             }
         });
-    });
-}
-;
-function createTokens(dataObj) {
+    }
+    );
+};
+
+function createTokens(dataObj: promiseObjPass): Promise<promiseObjPass> {
     return new Promise((resolve, reject) => {
         console.log("Calling Secret Manager to create " + dataObj.secretName);
         client.createSecret({
@@ -102,29 +145,27 @@ function createTokens(dataObj) {
         }, (err, data) => {
             if (err) {
                 reject(err.message);
-            }
-            else {
+            } else {
                 resolve(dataObj);
             }
         });
     });
-}
-;
-function deleteTokens(dataObj) {
+};
+
+function deleteTokens(dataObj: promiseObjPass): Promise<promiseObjPass> {
     return new Promise((resolve, reject) => {
         console.log("Calling Secret Manager to delete " + dataObj.secretName);
         client.deleteSecret({ SecretId: dataObj.secretName }, (err, data) => {
             if (err) {
                 reject(err.message);
-            }
-            else {
+            } else {
                 resolve(dataObj);
             }
         });
     });
-}
-;
-function updateTokens(dataObj) {
+};
+
+function updateTokens(dataObj: promiseObjPass): Promise<promiseObjPass> {
     return new Promise((resolve, reject) => {
         console.log("Calling Secret Manager to update " + dataObj.secretName);
         client.putSecretValue({
@@ -133,16 +174,15 @@ function updateTokens(dataObj) {
         }, (err, data) => {
             if (err) {
                 reject(err.message);
-            }
-            else {
+            } else {
                 resolve(dataObj);
             }
-        });
+        })
     });
-}
-;
+};
+
 // pingId promises
-function pingIdAuth(dataObj) {
+function pingIdAuth(dataObj: promiseObjPass): Promise<promiseObjPass> {
     console.log("Calling PingID Authorization");
     return new Promise((resolve, reject) => {
         let postBody = querystring.stringify({
@@ -182,9 +222,9 @@ function pingIdAuth(dataObj) {
         });
         cRequest.end(postBody);
     });
-}
-;
-function pingIdRefresh(dataObj) {
+};
+
+function pingIdRefresh(dataObj: promiseObjPass): Promise<promiseObjPass> {
     console.log("Calling PingID Refresh");
     return new Promise((resolve, reject) => {
         let postBody = querystring.stringify({
@@ -222,10 +262,11 @@ function pingIdRefresh(dataObj) {
         });
         cRequest.end(postBody);
     });
-}
-;
+};
+
 console.log("Loading Application Framework function");
-function activation() {
+
+function activation(): Promise<apiGwResponse> {
     if (!("params" in qs)) {
         return Promise.reject("Missing activation parameters");
     }
@@ -238,45 +279,50 @@ function activation() {
         return Promise.reject("Missing parameters {region}");
     }
     dataObj.instance_id = decQs.instance_id;
-    dataObj.apiKey = crypto.createHash('sha256').update(decQs["instance_id"]).digest('hex');
-    dataObj.instance_secret = crypto.createHmac('sha256', dataObj.stageVariables.applicationSharedSecret).update(dataObj.apiKey).digest('hex');
+    dataObj.apiKey = crypto.createHash('sha256').update(<string>decQs["instance_id"]).digest('hex');
+    dataObj.instance_secret = crypto.createHmac(
+        'sha256',
+        dataObj.stageVariables.applicationSharedSecret
+    ).update(dataObj.apiKey).digest('hex');
     dataObj.secretName = dataObj.stageVariables.applicationName + "_" + dataObj.instance_secret;
     // Let's get the master secret and redirect the user to AUTH
-    return checkExisting(dataObj).then(getMasterSecret).then(() => {
-        let returnObject;
-        switch (dataObj.exists) {
-            case false:
-                returnObject = {
-                    statusCode: 302,
-                    headers: {
-                        location: OAUTH2_AUTH + "?" + querystring.stringify({
-                            response_type: "code",
-                            client_id: dataObj.masterSecretValue.client_id,
-                            redirect_uri: dataObj.stageVariables.applicationCallbackUrl,
-                            scope: dataObj.stageVariables.applicationScope,
-                            instance_id: decQs.instance_id,
-                            state: decQs.instance_id
-                        })
-                    },
-                    body: JSON.stringify({ result: "OK" })
-                };
-                break;
-            case true:
-                returnObject = {
-                    statusCode: 302,
-                    headers: {
-                        location: dataObj.stageVariables.applicationWelcomePage + "?" + querystring.stringify({
-                            apikey: dataObj.apiKey
-                        })
-                    },
-                    body: JSON.stringify({ result: "OK" })
-                };
-                break;
-        }
-        return returnObject;
-    });
+    return checkExisting(dataObj).then(getMasterSecret).then(
+        () => {
+            let returnObject: apiGwResponse;
+            switch (dataObj.exists) {
+                case false:
+                    returnObject = {
+                        statusCode: 302,
+                        headers: {
+                            location: OAUTH2_AUTH + "?" + querystring.stringify({
+                                response_type: "code",
+                                client_id: dataObj.masterSecretValue.client_id,
+                                redirect_uri: dataObj.stageVariables.applicationCallbackUrl,
+                                scope: dataObj.stageVariables.applicationScope,
+                                instance_id: decQs.instance_id,
+                                state: decQs.instance_id
+                            })
+                        },
+                        body: JSON.stringify({ result: "OK" })
+                    };
+                    break;
+                case true:
+                    returnObject = {
+                        statusCode: 302,
+                        headers: {
+                            location: dataObj.stageVariables.applicationWelcomePage + "?" + querystring.stringify({
+                                apikey: dataObj.apiKey
+                            })
+                        },
+                        body: JSON.stringify({ result: "OK" })
+                    };
+                    break;
+            }
+            return returnObject;
+        });
 }
-function authorization() {
+
+function authorization(): Promise<apiGwResponse> {
     if (!("code" in qs)) {
         return Promise.reject("Invalid code");
     }
@@ -286,49 +332,59 @@ function authorization() {
     dataObj.pingIdCode = qs["code"];
     dataObj.instance_id = qs["state"];
     dataObj.apiKey = crypto.createHash('sha256').update(qs["state"]).digest('hex');
-    dataObj.instance_secret = crypto.createHmac('sha256', dataObj.stageVariables.applicationSharedSecret).update(dataObj.apiKey).digest('hex');
+    dataObj.instance_secret = crypto.createHmac(
+        'sha256',
+        dataObj.stageVariables.applicationSharedSecret
+    ).update(dataObj.apiKey).digest('hex');
     dataObj.secretName = dataObj.stageVariables.applicationName + "_" + dataObj.instance_secret;
-    return getMasterSecret(dataObj).then(pingIdAuth).then(createTokens).then(() => ({
-        statusCode: 302,
-        headers: {
-            location: dataObj.stageVariables.applicationWelcomePage + "?" + querystring.stringify({
-                apikey: dataObj.apiKey
-            })
-        },
-        body: JSON.stringify({ result: "OK" })
-    }));
+    return getMasterSecret(dataObj).then(pingIdAuth).then(createTokens).then(
+        () => ({
+            statusCode: 302,
+            headers: {
+                location: dataObj.stageVariables.applicationWelcomePage + "?" + querystring.stringify({
+                    apikey: dataObj.apiKey
+                })
+            },
+            body: JSON.stringify({ result: "OK" })
+        })
+    );
 }
-function tokenOperation() {
+
+function tokenOperation(): Promise<apiGwResponse> {
     if (!("api_secret" in qs)) {
         return Promise.reject("Missing parameters {api_secret}");
     }
     dataObj.secretName = dataObj.stageVariables.applicationName + "_" + qs["api_secret"];
     switch (dataObj.httpMethod) {
         case METHOD_DELETE:
-            return deleteTokens(dataObj).then(() => ({ body: JSON.stringify({ result: "OK" }) }));
+            return deleteTokens(dataObj).then(
+                () => ({ body: JSON.stringify({ result: "OK" }) }));
         case METHOD_GET:
-            return getTokens(dataObj).then(() => {
-                return {
-                    body: JSON.stringify({
-                        access_token: dataObj.tokens.access_token,
-                        expires_utc: dataObj.tokens.expires_utc,
-                        result: "OK"
-                    })
-                };
-            });
+            return getTokens(dataObj).then(
+                () => {
+                    return {
+                        body: JSON.stringify({
+                            access_token: dataObj.tokens.access_token,
+                            expires_utc: dataObj.tokens.expires_utc,
+                            result: "OK"
+                        })
+                    };
+                });
         case METHOD_PUT:
             console.log("Refresh tokens call");
-            return getMasterSecret(dataObj).then(getTokens).then(pingIdRefresh).then(updateTokens).then(() => {
-                return {
-                    body: JSON.stringify({
-                        access_token: dataObj.tokens.access_token,
-                        expires_utc: dataObj.tokens.expires_utc,
-                        result: "OK"
-                    })
-                };
-            });
+            return getMasterSecret(dataObj).then(getTokens).then(pingIdRefresh).then(updateTokens).then(
+                () => {
+                    return {
+                        body: JSON.stringify({
+                            access_token: dataObj.tokens.access_token,
+                            expires_utc: dataObj.tokens.expires_utc,
+                            result: "OK"
+                        })
+                    };
+                });
     }
 }
+
 exports.handler = async function (event, context, callback) {
     // Retrieve environmental variables from AWS API Gateway Stage Variables
     dataObj.stageVariables = event.stageVariables;
@@ -355,9 +411,12 @@ exports.handler = async function (event, context, callback) {
             callback(null, errorObject("Missing or invalid API Gateway stage variable {" + v + "}"));
             return;
         }
-    });
+    }
+    );
+
     dataObj.masterSecret = dataObj.stageVariables.applicationName + "_master";
-    let prom;
+    let prom: Promise<apiGwResponse>;
+
     console.log("Requested Path: " + event.path);
     // Initial Activation
     if (event.path == RESOURCE_ACTIVATION && event.httpMethod == METHOD_GET) {
@@ -380,18 +439,23 @@ exports.handler = async function (event, context, callback) {
                 prom = tokenOperation();
         }
     }
+
     if (prom == null) {
         prom = Promise.reject("Unknown resource or http method");
     }
-    await prom.then(response => {
-        console.log("Handling OK");
-        callback(null, response);
-    }, err => {
-        console.log("ERROR: Handling error: " + err);
-        callback(null, errorObject(err));
-    });
+    await prom.then(
+        response => {
+            console.log("Handling OK");
+            callback(null, response);
+        },
+        err => {
+            console.log("ERROR: Handling error: " + err);
+            callback(null, errorObject(err));
+        }
+    );
 };
-function errorObject(message) {
+
+function errorObject(message): apiGwResponse {
     return {
         "statusCode": 400,
         "body": JSON.stringify({ result: "ERROR", message: message })

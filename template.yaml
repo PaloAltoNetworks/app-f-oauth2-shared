@@ -5,7 +5,7 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       Name: Oauth2SharedGateway
-      StageName: prod
+      StageName: AppF
       DefinitionBody:
         swagger: "2.0"
         info:
@@ -14,33 +14,28 @@ Resources:
         paths:
           /:
             get:
-              produces:
-              - "application/json"
-              responses:
-                200:
-                  description: "200 response"
-                  schema:
-                    $ref: "#/definitions/Empty"
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Oauth2SharedLamdba.Arn}/invocations"
+              responses: {}
           /{proxy+}:
             x-amazon-apigateway-any-method:
-              produces:
-              - "application/json"
-              parameters:
-              - name: "proxy"
-                in: "path"
-                required: true
-                type: "string"
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Oauth2SharedLamdba.Arn}/invocations"
               responses: {}
       Variables:
-        applicationWelcomePage: "0000"
-        applicationCallbackUrl: "0000"
-        applicationName: "0000"
-        applicationSharedSecret: "0000"
-        applicationScope: "0000"
+        applicationWelcomePage: "...."
+        applicationCallbackUrl: "...."
+        applicationName: "...."
+        applicationSharedSecret: "...."
+        applicationScope: "...."
   Oauth2SharedLamdba:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: oauth2sharedlamdba
+      FunctionName: Oauth2SharedLamdba
       Handler: index.handler
       Runtime: nodejs8.10
       Timeout: 180
@@ -53,22 +48,10 @@ Resources:
           Properties:
             Path: /
             Method: get
+            RestApiId: !Ref Oauth2SharedGateway
         Wildcard:
           Type: Api
           Properties:
             Path: /{proxy+}
             Method: any
-      Policies:
-        - Statement:
-          - Effect: Allow
-            Action:
-              - "logs:CreateLogStream"
-              - "logs:CreateLogGroup"
-              - "logs:PutLogEvents"
-              - "secretsmanager:GetSecretValue"
-              - "secretsmanager:DescribeSecret"
-              - "secretsmanager:PutSecretValue"
-              - "secretsmanager:CreateSecret"
-              - "secretsmanager:DeleteSecret"
-            Resource:
-              - "*"
+            RestApiId: !Ref Oauth2SharedGateway
