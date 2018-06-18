@@ -47,7 +47,7 @@ Use the *AWS Secrets Manager* console to create the master secret.
   - `client_id` with a value equal to the *client_id* value provided back by Palo Alto Networks DevOps after a successful application deployment into the portal.
   - `client_secret` with a value equal to the *client_secret* value provided back by DevOps.
 
-5. The _Secret name_ must conform to *<applicationName>_master* schema.
+5. The _Secret name_ must conform to *[applicationName]_master* naming layout.
 6. Keep disabled _automatic rotation_ and store the secret.
 
 ## Token operations
