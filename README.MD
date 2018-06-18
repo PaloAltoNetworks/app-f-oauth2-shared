@@ -21,7 +21,7 @@ This serverless application will store application credentials (*access_token*, 
   - Resources = all
 4. Review the new polciy, give it a name and create the new policy.
 > **Alert**
-> This inline policy will prevent the CloudFormation template from deleting the stack. If you want to use the CloudFormation to revert the application deployment then remember to remove this inline policy from the IAM Role firts.
+> This inline policy will prevent the CloudFormation template from deleting the stack. If you want to use the CloudFormation to revert the application deployment then remember to remove this inline policy from the IAM Role first.
 
 ## API Gateway Stage Variables and the Application Portal **manifest file**
 Deployment of applications in the Application Framework application portal is currently a manual procedure. The partner must submit a _manifest file_ describing his application to the Palo Alto Networks DevOps team. A sucessfull deployment of the application into the portal will provide back the partner with a _master secret document_ containing two critical attributes needed for the OAUTH2 process: the **client_id** and the **client_secret**.
