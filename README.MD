@@ -9,7 +9,6 @@ The deployment will trigger a CloudFormation stack that will create the followin
 * Lamba Function named **Oauth2SharedLamdba**
 * IAM Role named **aws-serverless-repository-o-Oauth2SharedLamdbaRole...**
 Both the _API Gateway_ and the _IAM Role_ will need some adjustment before the application can be used.
-
 ## AWS Secrets Manager inline policies
 This serverless application will store application credentials (*access_token*, *refresh_token*) in the **AWS Secrets Manager** service. The deployment will create an IAM Role named _aws-serverless-repository-o-Oauth2SharedLamdbaRole..._ with the RO AWS Managed Policy named *AWSLambdaBasicExecutionRole* attached to it. You must add an inlice policy to the role to allow the lamdba function be able to interface with the _Secrets Manager_
 1. Navigate in the AWS Console to Services -> IAM -> Roles
@@ -22,7 +21,6 @@ This serverless application will store application credentials (*access_token*, 
 4. Review the new polciy, give it a name and create the new policy.
 > **Alert**
 > This inline policy will prevent the CloudFormation template from deleting the stack. If you want to use the CloudFormation to revert the application deployment then remember to remove this inline policy from the IAM Role firts.
-
 ## API Gateway Stage Variables and the Application Portal **manifest file**
 Deployment of applications in the Application Framework application portal is currently a manual procedure. The partner must submit a _manifest file_ describing his application to the Palo Alto Networks DevOps team. A sucessfull deployment of the application into the portal will provide back the partner with a _master secret document_ containing two critical attributes needed for the OAUTH2 process: the **client_id** and the **client_secret**.
 
@@ -35,7 +33,6 @@ The lambda function relies on some variables whose values are provided as _stage
 ..* `applicationCallbackUrl` this value must match the value of the parameter `auth_redirect_uris` in the manifest file. The URL must resolve to the lambda function. This means that it must be any child path of the API Gateway invocation URL (or mapped custom domain). If you use the automatically created invocation url then remember that the _stage_ path will be removed during the integration process. For example, if your invocation URL happens to be https://cmpxxx65.execute-api.eu-west-1.amazonaws.com/AppF then a valid value for `applicationCallbackUrl` could be https://cmpxxx65.execute-api.eu-west-1.amazonaws.com/callback (notice _AppF_ is missing).
 ..* Replace the value of the variable `applicationWelcomePage` with the URL of a Welcome Page for the user. The user's browser will be redirected to this URL at the end of the authentication process (or when clicking on your activated application tile in the portal). You can explore this [example page](https://s3-eu-west-1.amazonaws.com/oauth2shared/welcome.html)
 ..* For each successfull application activation the lambda function will generate and provide back an **API_KEY** to be shared with the application software deployement. Internally, a secret index will be created using the function `sha256hmac(API_KEY, shared_secret)` the value of the variable `applicationSharedSecret` must contain this *shared_secret* to be known only to the lamda function and all application software deployments.
-
 ## Secrets Manager **Master Secret**
 The lambda function needs access to the master *client_id* and *client_secret* to perform authentication operations. It will try to get these values from the _AWS Secrets Manager_ service looking for a secret named *<applicationName>_master* (being _applicationName_ the name you provided in the manifest file).
 
