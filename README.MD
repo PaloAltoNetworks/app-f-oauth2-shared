@@ -37,7 +37,7 @@ The lambda function relies on some variables whose values are provided as _stage
   - For each successfull application activation the lambda function will generate and provide back an **API_KEY** to be shared with the application software deployement. Internally, a secret index will be created using the function `sha256hmac(API_KEY, shared_secret)` the value of the variable `applicationSharedSecret` must contain this *shared_secret* to be known only to the lamda function and all application software deployments.
 
 ## Secrets Manager **Master Secret**
-The lambda function needs access to the master *client_id* and *client_secret* to perform authentication operations. It will try to get these values from the _AWS Secrets Manager_ service looking for a secret named *<applicationName>_master* (being _applicationName_ the name you provided in the manifest file).
+The lambda function needs access to the master *client_id* and *client_secret* to perform authentication operations. It will try to get these values from the _AWS Secrets Manager_ service looking for a secret named *[applicationName]_master* (being _applicationName_ the name you provided in the manifest file).
 
 Use the *AWS Secrets Manager* console to create the master secret.
 1. Navigate in the AWS Console to Services -> Secrets Manager
