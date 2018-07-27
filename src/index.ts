@@ -519,11 +519,6 @@ exports.handler = async function (event, context, callback) {
         console.log('Application Framework activation request');
         prom = activation();
     }
-    // Authorization
-    if (event.path == url.parse(dataObj.stageVariables.applicationCallbackUrl).pathname && event.httpMethod == METHOD_GET) {
-        console.log('Application Framework authorization request');
-        prom = authorization();
-    }
     // Token operation
     if (event.path == RESOURCE_TOKEN) {
         switch (event.httpMethod) {
@@ -535,9 +530,14 @@ exports.handler = async function (event, context, callback) {
                 prom = tokenOperation();
         }
     }
-
+    // Neither the root path (RESOURCE_ACTIVATION) neither the token entry point. Let's assume it is a callback call
     if (prom == null) {
-        prom = Promise.reject("Unknown resource or http method");
+        if (event.httpMethod == METHOD_GET) {
+            console.log('Application Framework authorization request');
+            prom = authorization();
+        } else {
+            prom = Promise.reject("Unknown resource or http method");
+        }
     }
     await prom.then(
         response => {
