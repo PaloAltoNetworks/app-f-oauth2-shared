@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>OA2SHARED Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+        crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
+    <script src="loginsrv.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="col-md-8 offset-md-2">
+            <div id="alert" class="alert alert-secondary my-3 invisible" role="alert">#</div>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h3 class="card-title">Application Framework</h1>
+                    <h4 class="card-subtitle">LS Instance Broker</h4>
+                    <p class="my-2">Use your credentials to login or create a new account.</p>
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item"><a class="nav-link active" href="#login" aria-controls="login" role="tab"
+                                data-toggle="tab">Login</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#create" aria-controls="create" role="tab"
+                                data-toggle="tab">Create
+                                Account</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <div role="tabpanel" class="tab-pane active" id="login">
+                            <p class="my-2">Use your email address and password to login into your tenant.</p>
+                            <form id="loginform" action="#" method="post">
+                                <div class="form-group">
+                                    <label for="iem">Email Address:</label>
+                                    <div class="input-group mb-3">
+                                        <div class="input-group-addon"><span class="input-group-text">@</span></div>
+                                        <input name="username" id="iem" type="text" class="form-control" placeholder="email address"
+                                            required>
+                                    </div>
+                                    <label for="ipw">Password:</label><br>
+                                    <input name="password" id="ipw" type="password" class="form-control mb-3"
+                                        placeholder="password" required>
+                                    <button type="submit" class="btn btn-default">Login</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="create">
+                            <p class="my-2">Provide a new email address and password to create a new tenant instance.</p>
+                            <form id="createform" action="#" method="post">
+                                <div class="form-group">
+                                    <label>Email Address:</label>
+                                    <div class="input-group">
+                                        <div class="input-group-addon"><span class="input-group-text">@</span></div>
+                                        <input name="username" type="text" class="form-control mb-3" placeholder="email address"
+                                            required>
+                                    </div>
+                                    <label>Password:</label>
+                                    <input name="password" id="pw1" type="password" class="form-control mb-3"
+                                        placeholder="password" required>
+                                    <label id="kk">Repeat Password:</label>
+                                    <input id="pw2" type="password" class="form-control mb-3" placeholder="password"
+                                        required>
+                                    <button id="cb" type="submit" class="btn btn-default">Create Account</span></button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

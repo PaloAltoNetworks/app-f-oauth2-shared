@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Resources:
+  oauth2sharedgw:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: oauth2sharedgw
+      StageName: prod
+      DefinitionBody:
+        swagger: "2.0"
+        info:
+          version: "2018-06-11T16:14:04Z"
+          title: "oauth2 proxy component"
+        paths:
+          /:
+            x-amazon-apigateway-any-method:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${oauth2sharedlambda.Arn}/invocations"
+              responses: {}
+          /{proxy+}:
+            x-amazon-apigateway-any-method:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${oauth2sharedlambda.Arn}/invocations"
+              responses: {}
+      Variables:
+        SCOPE: logging-service:read logging-service:write eventservice:read directory-sync-service:read
+        DBTABLE: !Ref dbTable
+  oauth2sharedlambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: oa2scmp
+      Handler: apigw.handler
+      Runtime: nodejs8.10
+      Timeout: 10
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref dbTable
+      CodeUri:
+        Bucket: oauth2shared
+        Key: oa2shared.zip
+      Events:
+        Main:
+          Type: Api
+          Properties:
+            Path: /
+            Method: ANY
+            RestApiId: !Ref oauth2sharedgw
+        Wildcard:
+          Type: Api
+          Properties:
+            Path: '/{proxy+}'
+            Method: ANY
+            RestApiId: !Ref oauth2sharedgw
+  dbTable:
+    Type: AWS::Serverless::SimpleTable
