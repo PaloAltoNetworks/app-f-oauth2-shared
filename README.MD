@@ -66,7 +66,7 @@ Although you can use the application as-is, it is highly recommended to create a
 Provide the following values in the corresponding Application Framework Manifest File:
 - app_base_url: https://{FQDN} (being {FQDN} the CNAME record you created in the step 5)
 - auth_redirect_uris: This value is a field. Provide, at least the entry https://{FQDN}/callback
-- scopes: Also a list. Provide an entry for each item you provided in the spaced-separated _SCOPE_'s API GW Stage Variable value
+- scopes: Also a list. Provide at least one entry for each item you provided in the spaced-separated _SCOPE_'s API GW Stage Variable value
 
 # Instructions
 Check the [GitHub Wiki space](https://github.com/PaloAltoNetworks/app-f-oauth2-shared/wiki) for details.
