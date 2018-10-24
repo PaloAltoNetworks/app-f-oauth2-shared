@@ -283,11 +283,11 @@ exports.handler = async function (
                 break;
             }
             case "GET:/token": {
-                response = comm.validResponse(await tokMgr.getAccessToken(tokenEx.token));
+                response = comm.validResponse('operation successful', { access_token: await tokMgr.getAccessToken(tokenEx.token) });
                 break;
             }
             case "GET:/token/refresh": {
-                response = comm.validResponse(await tokMgr.refreshToken(tokenEx.token));
+                response = comm.validResponse('operation successful', { access_token: await tokMgr.refreshToken(tokenEx.token) });
                 break;
             }
             case "GET:/token/revoke": {
