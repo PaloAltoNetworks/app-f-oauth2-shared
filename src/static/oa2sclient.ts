@@ -1,3 +1,16 @@
+// Copyright 2015-2017 Palo Alto Networks, Inc
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//       http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 interface clientResponse {
     custId: string;
     instances: {
@@ -175,6 +188,11 @@ class oa2sc {
         return resp.response;
     }
 
+    /**
+     * Normal workflow is for the instance to be created on the server side as part of the "/callback" redirection for
+     * already logged in users. For non logged in users the expected workflow is for the instance to be created by the
+     * {@link getOa2sc} factory. So no need to use this method ever.
+     */
     async addInstance(inst: string, reg: string, desc: string): Promise<string> {
         let resp = await oa2sc.addInstanceInternal(inst, reg, desc, this.url);
         this.instances.push({

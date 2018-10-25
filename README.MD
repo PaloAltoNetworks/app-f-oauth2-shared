@@ -11,14 +11,14 @@ The deployment will trigger a CloudFormation stack that will create the followin
 
 The _IAM Role_ will need some adjustment before the application can be used.
 ## IAM Role inline policies for AWS Secrets Manager
-This serverless application will store application credentials (*access_token*, *refresh_token*) in the **AWS Secrets Manager** service. The deployment will create an IAM Role named _newoa2cft-oauth2sharedlambdaRole-..._ with the RO AWS Managed Policy named *AWSLambdaBasicExecutionRole* as well as a Inline Policy rule named *oauth2sharedlambdaRolePolicy0 * attached to it. You must add/edit an/the inline policy to the role to allow the lamdba function be able to interface with the _Secrets Manager_
+This serverless application will store application credentials (*access_token*, *refresh_token*) in the **AWS Secrets Manager** service. The deployment will create an IAM Role named _newoa2cft-oauth2sharedlambdaRole-..._ with the RO AWS Managed Policy named *AWSLambdaBasicExecutionRole* as well as a Inline Policy rule named *oauth2sharedlambdaRolePolicy0* attached to it. You must add/edit an/the inline policy to the role to allow the lamdba function be able to interface with the _Secrets Manager_
 1. Navigate in the AWS Console to Services -> IAM -> Roles
 2. Click on the role named _aws-serverless-repository-o-Oauth2SharedLamdbaRole..._
 3. Click on **Add inline policy** and select the following options:
   - Service = **Secrets Manager**
-  - Access Level Read = _GetSecretValue_
-  - Access Level Write = _CreateSecret_, _PutSecretValue_ and _DeleteSecret_
-  - Resources = all
+  - Access Level Read = **GetSecretValue**
+  - Access Level Write = **CreateSecret**, **PutSecretValue** and **DeleteSecret**
+  - Resources = **all**
 4. Review the new polciy, give it a name and create the new policy.
 > **Alert**
 > This inline policy will prevent the CloudFormation template from deleting the stack. If you want to use the CloudFormation to revert the application deployment then remember to remove this inline policy from the IAM Role first.
@@ -31,7 +31,7 @@ The lambda function behavior can be tuned with some variables whose values are p
 2. Click on the Stage named _prod_
 3. Click on the tab _Stage Variables_
   - `DBTABLE` (mandatory) The CFT must have created a Dynamod DB table with this name as well as to provide CRUD access level to that table to the lambda function (inline policy in the IAM's role named _newoa2cft-oauth2sharedlambdaRole-..._).
-  - `SCOPE` (optional / defaults to '') must be a string separated sequence of a subset of the entries in the parameter `scopes` in the manifest file (example: "logging-service:read event-service:read").
+  - `SCOPE` (optional / defaults to "") must be a string separated sequence of a subset of the entries in the parameter `scopes` in the manifest file (example: "logging-service:read event-service:read").
   - `MASTERSECRET` (optional) It will be used to HMAC the user passwords in the database. Do not change/provide this stage variable once the first user account has been created.
   - `SMPREFIX` (optionals / defaults to 'oa2s') A prefix that will be used for all generated secrets stored in AWS' Secrets Manager service
   - `AUTOREFRESH` (optional / defaults to 'false') Triggers the _autoRefresh_ feature in the token manager entry point. If set to true, then any _GET:/token_ operation performed in the last 5 minutes of the access token validity will trigger a _GET:/token/refresh_ operation and return the refresed access token.
@@ -55,7 +55,7 @@ Use the *AWS Secrets Manager* console to create the master secret.
 
 # Manifest File
 Although you can use the application as-is, it is highly recommended to create a _Custom Domain Name_ entry for your application.
-1. Navidate in the AWS Console to Services -> API Gateway
+1. Navigate in the AWS Console to Services -> API Gateway
 2. Select Custom Domain Names and click on the _Create Custom Domain Name_ button
 3. Provide a _Domain Name_ and the _ACM Certificate_ you want to bound that custom name to. If you do not have any ACM Certificate yet then create one in the _AWS Certificate Manager_ service before completing this step.
 4. Click on _Edit_ to create a new _Base Path Mapping_
