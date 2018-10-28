@@ -113,7 +113,7 @@ exports.handler = async function (
         'SESSTOUT': x => (isNaN(parseInt(x as string, 10))) ? 1800 : parseInt(x as string, 10),
         'SESSGUARD': x => (isNaN(parseInt(x as string, 10))) ? 300 : parseInt(x as string, 10),
         'COOKIENAME': x => (x == null || x === undefined) ? 'oauth2shared' : x,
-        'SCOPE': x => (x == null || x === undefined) ? '' : x
+        'SCOPE': x => (x == null || x === undefined) ? 'logging-service:read' : x
     }
     let stageVar = event.stageVariables;
     let configValues: { [index: string]: string | number | boolean } = {};
