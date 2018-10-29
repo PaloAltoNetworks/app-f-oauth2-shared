@@ -17,7 +17,6 @@ class Oa2scCredential(Credentials):
         if not self.token_lock.locked():
             with self.token_lock:
                 r = get(self._refreshUrl, headers=self._headers)
-                print r.text
                 self.access_token = r.json().get('response').get('access_token')
                 self.write_credentials()
                 return self.access_token
