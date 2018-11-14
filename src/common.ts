@@ -43,10 +43,12 @@ export interface tokenS {
 export async function init(
     prefix: string,
     awsRegion: string,
-    secret: string,
+    jwtIss: { [i: string]: string },
+    usrSecret: string,
     autoR: boolean,
     timeout: number,
     dbTable: string,
+    secret: string,
     event?: APIGatewayProxyEvent): Promise<void> {
     if (alreadyInit) {
         return;
@@ -55,10 +57,10 @@ export async function init(
     sm_init(awsRegion);
     id_init();
     await lo_init();
-    await mj_init(secret);
+    await mj_init(jwtIss);
     await to_init(prefix, autoR);
     in_init();
-    await us_init(timeout, secret);
+    await us_init(timeout, usrSecret);
     mSecret = secret;
     if (event !== undefined) {
         if (event.path == '/') {

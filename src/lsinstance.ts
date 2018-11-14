@@ -17,9 +17,9 @@ import * as token from './token';
 import { uidGenerator, redirectResponse } from './common';
 import { APIGatewayProxyResult } from 'aws-lambda';
 
-const JWTISS = 'usr';
 const DBPREFIX = 'inst';
 const OAUTH2_TOKEN = 'https://identity.paloaltonetworks.com/as/authorization.oauth2';
+export const JWTISS = 'usr';
 export const ERRCIDEXISTS = 'client id already exists';
 export const ERRIIDEXISTS = 'instance id already exists';
 export const ERRTIDEXISTS = 'token id already exists';
