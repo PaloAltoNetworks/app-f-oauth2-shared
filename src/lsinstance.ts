@@ -141,6 +141,7 @@ export async function removeInstance(authToken: string, instanceID: string): Pro
     }
     let apiTokens = Object.keys(c.lsinst[instanceID].apitok);
     if (apiTokens.length == 0 || apiTokens.every(i => isInvalid(c.lsinst[instanceID].apitok[i]))) {
+        await token.revokeRefreshToken(c.lsinst[instanceID].instanceId)
         delete c.lsinst[instanceID];
         await storeAccount(c);
         return

@@ -17,11 +17,14 @@ import { URL } from 'url';
 import { request } from 'https';
 
 const TOKEN_URL = "https://api.paloaltonetworks.com/api/oauth2/RequestToken";
+const REVOKE_TOKEN_URL = "https://api.paloaltonetworks.com/api/oauth2/RevokeToken";
 
 let tokenUrl: URL;
+let revokeUrl: URL;
 
-export function init(ptokenUrl = TOKEN_URL): void {
+export function init(ptokenUrl = TOKEN_URL, prtokenUrl = REVOKE_TOKEN_URL): void {
     tokenUrl = new URL(ptokenUrl);
+    revokeUrl = new URL(prtokenUrl);
 }
 
 /**
@@ -29,11 +32,11 @@ export function init(ptokenUrl = TOKEN_URL): void {
  * @param postBody the POST body
  * @returns the post response text
  */
-function urlPromPostRequest(postBody: string): Promise<string> {
+function urlPromPostRequest(postBody: string, destUrl = tokenUrl): Promise<string> {
     return new Promise((resolve, reject) => {
         let cRequest = request({
-            hostname: tokenUrl.hostname,
-            path: tokenUrl.pathname,
+            hostname: destUrl.hostname,
+            path: destUrl.pathname,
             method: 'POST',
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
@@ -85,6 +88,17 @@ export async function refreshToken(clientID: string, clientSecret: string, curre
         newToken.refresh_token = response['refresh_token'];
     }
     return newToken;
+}
+
+export async function revokeRefreshToken(clientID: string, clientSecret: string, rToken: string): Promise<void> {
+    let postBody = stringify({
+        token: rToken,
+        client_id: clientID,
+        client_secret: clientSecret,
+        token_type_hint: "refresh_token"
+    });
+    let response = JSON.parse(await urlPromPostRequest(postBody, revokeUrl));
+    console.log("Response from PingID\n%j", response);
 }
 
 export async function requestToken(client_id: string, client_secret: string, code: string, callbackUrl: string): Promise<tokenS> {
