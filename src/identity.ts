@@ -81,7 +81,7 @@ export async function refreshToken(clientID: string, clientSecret: string, curre
     }
     let newToken: tokenS = {
         access_token: response['access_token'],
-        expires_utc: Math.floor(Date.now() / 1000) + response['expires_in'],
+        expires_utc: Math.floor(Date.now() / 1000) + parseInt(response['expires_in'], 10),
         refresh_token: currentT.refresh_token
     }
     if ('refresh_token' in response) {
@@ -117,7 +117,7 @@ export async function requestToken(client_id: string, client_secret: string, cod
     }
     let newToken: tokenS = {
         access_token: response['access_token'],
-        expires_utc: Math.floor(Date.now() / 1000) + parseInt(response['expires_in']),
+        expires_utc: Math.floor(Date.now() / 1000) + parseInt(response['expires_in'], 10),
         refresh_token: response['refresh_token']
     }
     return newToken;
