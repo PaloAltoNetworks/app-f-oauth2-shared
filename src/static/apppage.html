@@ -69,8 +69,10 @@
                     <div class="d-flex" v-for="(token, tokenIdx) in instance.apitok">
                         <div title="description" v-bind:class="`p-2 flex-fill ${token.invalid ? 'text-danger' : ''}`">{{
                             token.subject }}</div>
+                        <div title="expiration" class="p-2">{{ new Date(token.expiration *
+                            1000).toISOString().replace(/T/, ' ').replace(/\..+/, '') }}</div>
                         <div title="broker token" v-bind:class="`p-2 text-monospace ${token.invalid ? 'text-danger' : ''}`">{{
-                            `...${token.value.substr(token.value.length-40)}` }}</div>
+                            `...${token.value.substr(token.value.length-30)}` }}</div>
                         <div class="p-2">
                             <i title="show" class="fas fa-eye mx-2" v-on:click="copyToken('copytoken', token.value)"></i>
                             <i title="delete" class="fas fa-trash mr-2" v-on:click="delToken(instIdx, tokenIdx)"></i>

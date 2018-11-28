@@ -41,28 +41,31 @@ class minijwterror extends Error {
 }
 
 let header = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'; // base64({ alg: 'HS256', typ: 'JWT' })
-let secret: string;
 let memCache: string[];
 let checkCache: string[];
+let sigFuncs: { [i: string]: (c: string) => string }
 
-export async function init(hmacSecret: string): Promise<void> {
+export async function init(issuers: { [i: string]: string }): Promise<void> {
     memCache = [];
-    secret = hmacSecret;
     checkCache = [];
+    sigFuncs = {};
+    for (let [i, s] of Object.entries(issuers)) {
+        sigFuncs[i] = function (content: string): string { return signature(content, s) }
+    }
 }
 
-function signature(content: string): string {
+function signature(content: string, secret: string): string {
     let c = createHmac('sha256', secret);
     c.update(content);
     return c.digest('base64');
 }
 
-function checkSignature(signString: string, signValue: string): boolean {
+function checkSignature(signString: string, signValue: string, signF: (c: string) => string): boolean {
     let combo = signString + ":" + signValue;
     if (checkCache.includes(combo)) {
         return true
     }
-    let matched = signature(signString) == signValue;
+    let matched = signF(signString) == signValue;
     if (matched) {
         checkCache.push(combo);
         if (checkCache.length > MAXCHECKCACHE) {
@@ -77,6 +80,9 @@ export function tokenize(payload: miniToken): string {
     if (!('sub' in payload && 'exp' in payload && 'jti' in payload && 'iss' in payload)) {
         throw new minijwterror('invalid payload');
     }
+    if (!(payload.iss in sigFuncs)) {
+        throw new minijwterror('unknown issuer');
+    }
     let pClone: miniToken = {
         exp: payload.exp,
         sub: payload.sub,
@@ -85,7 +91,7 @@ export function tokenize(payload: miniToken): string {
     }
     let b64payload = Buffer.from(JSON.stringify(pClone)).toString('base64');
     let signString = header + '.' + b64payload;
-    return signString + '.' + signature(signString);
+    return signString + '.' + sigFuncs[payload.iss](signString);
 }
 
 async function dbRevoked(token: string): Promise<boolean> {
@@ -97,8 +103,11 @@ export async function payload(token: string, expectedIssuer: string): Promise<mi
     if (await dbRevoked(token) || memCache.includes(token)) {
         throw new minijwterror('revoked token');
     }
+    if (!(expectedIssuer in sigFuncs)) {
+        throw new minijwterror('unknown issuer');
+    }
     let parts = token.split('.');
-    if (parts.length != 3 || !checkSignature(parts[0] + '.' + parts[1], parts[2])) {
+    if (parts.length != 3 || !checkSignature(parts[0] + '.' + parts[1], parts[2], sigFuncs[expectedIssuer])) {
         throw new minijwterror('invalid token');
     }
     let payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());

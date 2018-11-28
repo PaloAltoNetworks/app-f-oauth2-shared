@@ -105,6 +105,7 @@ exports.handler = async function (
     context: APIGatewayEventRequestContext,
     callback: APIGatewayProxyCallback): Promise<APIGatewayProxyResult> {
 
+
     let presets: { [index: string]: (x: string | null | undefined) => string | number | boolean } = {
         'MASTERSECRET': x => (x == null || x === undefined) ? 'yjnKx4tGmE' : x,
         'SMPREFIX': x => (x == null || x === undefined) ? 'oa2s' : x,
@@ -113,7 +114,10 @@ exports.handler = async function (
         'SESSTOUT': x => (isNaN(parseInt(x as string, 10))) ? 1800 : parseInt(x as string, 10),
         'SESSGUARD': x => (isNaN(parseInt(x as string, 10))) ? 300 : parseInt(x as string, 10),
         'COOKIENAME': x => (x == null || x === undefined) ? 'oauth2shared' : x,
-        'SCOPE': x => (x == null || x === undefined) ? '' : x
+        'SCOPE': x => (x == null || x === undefined) ? 'logging-service:read' : x,
+        'FESECRET': x => (x == null || x === undefined) ? 'yjnKx4tGmE' : x,
+        'BESECRET': x => (x == null || x === undefined) ? 'yjnKx4tGmE' : x,
+        'USRSECRET': x => (x == null || x === undefined) ? 'yjnKx4tGmE' : x
     }
     let stageVar = event.stageVariables;
     let configValues: { [index: string]: string | number | boolean } = {};
@@ -124,13 +128,19 @@ exports.handler = async function (
         return comm.errorResponse(500, 'unknown AWS_REGION');
     }
 
+    let jwtSecrets: { [i: string]: string } = {}
+    jwtSecrets[insMgr.JWTISS] = configValues['FESECRET'] as string;
+    jwtSecrets[tokMgr.JWTISS] = configValues['BESECRET'] as string;
+
     try {
         await comm.init(configValues['SMPREFIX'] as string,
             awsRegion,
-            configValues['MASTERSECRET'] as string,
+            jwtSecrets,
+            configValues['USRSECRET'] as string,
             configValues['AUTOREFRESH'] as boolean,
             configValues['SESSTOUT'] as number,
             configValues['DBTABLE'] as string,
+            configValues['MASTERSECRET'] as string,
             event);
     } catch (e) {
         console.log("ERROR(internal): %s\n%j", e.message, e);

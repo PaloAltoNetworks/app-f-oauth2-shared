@@ -78,6 +78,12 @@ export async function getAccessToken(authToken: string): Promise<string> {
     }
     return tokenEntry.access_token;
 }
+
+export async function revokeRefreshToken(tokenID: string): Promise<void> {
+    let tokenEntry = await getTokenSecret(tokenID);
+    await identity.revokeRefreshToken(clientID, clientSecret, tokenEntry.refresh_token);
+}
+
 export async function exchangeCode(code: string, callbackUrl: string, instId: string, desc: string): Promise<void> {
     let tokens = await identity.requestToken(clientID, clientSecret, code, callbackUrl);
     try {

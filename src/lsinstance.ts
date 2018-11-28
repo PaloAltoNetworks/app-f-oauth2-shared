@@ -17,9 +17,9 @@ import * as token from './token';
 import { uidGenerator, redirectResponse } from './common';
 import { APIGatewayProxyResult } from 'aws-lambda';
 
-const JWTISS = 'usr';
 const DBPREFIX = 'inst';
 const OAUTH2_TOKEN = 'https://identity.paloaltonetworks.com/as/authorization.oauth2';
+export const JWTISS = 'usr';
 export const ERRCIDEXISTS = 'client id already exists';
 export const ERRIIDEXISTS = 'instance id already exists';
 export const ERRTIDEXISTS = 'token id already exists';
@@ -141,8 +141,10 @@ export async function removeInstance(authToken: string, instanceID: string): Pro
     }
     let apiTokens = Object.keys(c.lsinst[instanceID].apitok);
     if (apiTokens.length == 0 || apiTokens.every(i => isInvalid(c.lsinst[instanceID].apitok[i]))) {
+        let task1 = token.revokeRefreshToken(c.lsinst[instanceID].instanceId)
         delete c.lsinst[instanceID];
-        await storeAccount(c);
+        let task2 = storeAccount(c);
+        await Promise.all([task1, task2]);
         return
     }
     throw Error(ERRREMINS);
